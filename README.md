@@ -12,7 +12,7 @@ LEANCLOUD_APPKEY=Leancloud的AppKey
 
 第二步：
 
-- 运行 node scripts/db.js game 创建可支持的游戏类别数据并存入 leancloud
+- 运行 node scripts/db.js game 将支持的游戏类别数据存入 leancloud
 - 运行 node scripts/db.js cleaning 将清洗后的数据存入 leancloud
 
 第三步：
@@ -24,3 +24,7 @@ npm run dev
 # or
 yarn dev
 ```
+
+第四步：
+
+输入演示地址 `0xd735e0259a4e48366f517cff39ebec16518b2d1c` 进行查看
