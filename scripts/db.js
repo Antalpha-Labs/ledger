@@ -100,7 +100,7 @@ async function dbRun(){
   }
 }
 
-if (argv[2] && argv[2] === 'db'){
+if (argv[2] && argv[2] === 'cleaning'){
   dbRun();
 }
 
