@@ -28,10 +28,10 @@ const BRIDGEWORLD_CONSUMABLES = '0xf3d00a2559d84de7ac093443bcaada5f4ee4165c';
 const BRIDGEWORLD_KEY = '0xf0a35ba261ece4fc12870e5b7b9e7790202ef9b5';
 const BRIDGEWORLD_BALANCER_CRYSTAL = '0xbfeba04384cecfaf0240b49163ed418f82e43d3a';
 
-// AV.init({
-//   appId: LEANCLOUD_APPID,
-//   appKey: LEANCLOUD_APPKEY
-// });
+AV.init({
+  appId: LEANCLOUD_APPID,
+  appKey: LEANCLOUD_APPKEY
+});
 
 const Game = AV.Object.extend('Game');
 const OverallActivity = AV.Object.extend('OverallActivity');
@@ -68,7 +68,7 @@ async function run(){
 
   try{
     const result = await AV.Object.saveAll([elleria, bridgeworld]);
-    console.log(result);
+    console.log('Game 保存成功',result);
   } catch(e){
     console.log('Game 保存错误', e);
   } 
@@ -197,8 +197,7 @@ async function dbRun(){
   }
 }
 
-if (argv[2] && argv[2] === 'cleaning'){
-  dbRun();
+async function mockRun(){
   const mockdata = [
     {
       identifier: 1,
@@ -281,4 +280,18 @@ if (argv[2] && argv[2] === 'cleaning'){
       type: 2,
     }
   ];
+  
+  try{
+    const result = await AV.Object.saveAll(mockdata.map((value) => {
+      return createOverallActivityRow(value)
+    }));
+    console.log('OverallActivity mock数据保存成功', result);
+  } catch(e){
+    console.log('OverallActivity 保存错误', e);
+  } 
+}
+
+if (argv[2] && argv[2] === 'cleaning'){
+  // dbRun();
+  mockRun();
 }
