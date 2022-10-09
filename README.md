@@ -12,6 +12,8 @@ LEANCLOUD_APPKEY=Leancloud的AppKey
 
 第二步：
 
+**数据是自己伪造的**
+
 - 运行 node scripts/db.js game 将支持的游戏类别数据存入 leancloud
 - 运行 node scripts/db.js cleaning 将清洗后的数据存入 leancloud
 

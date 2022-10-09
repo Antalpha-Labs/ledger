@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 const dotenv = require('dotenv');
-const AV = require('leancloud-storage')
+const AV = require('leancloud-storage');
+const ethers = require('ethers');
 
 dotenv.config({path: '.env.local'});
 
@@ -27,10 +28,10 @@ const BRIDGEWORLD_CONSUMABLES = '0xf3d00a2559d84de7ac093443bcaada5f4ee4165c';
 const BRIDGEWORLD_KEY = '0xf0a35ba261ece4fc12870e5b7b9e7790202ef9b5';
 const BRIDGEWORLD_BALANCER_CRYSTAL = '0xbfeba04384cecfaf0240b49163ed418f82e43d3a';
 
-AV.init({
-  appId: LEANCLOUD_APPID,
-  appKey: LEANCLOUD_APPKEY
-});
+// AV.init({
+//   appId: LEANCLOUD_APPID,
+//   appKey: LEANCLOUD_APPKEY
+// });
 
 const Game = AV.Object.extend('Game');
 const OverallActivity = AV.Object.extend('OverallActivity');
@@ -90,10 +91,106 @@ function readCSV(csvPath){
 
 async function dbRun(){
   try{
-    const csvPath = path.resolve(__dirname,'./db/export-token.csv');
+    const csvPath = path.resolve(__dirname,'./db/export-token-elleria.csv');
     const db = await readCSV(csvPath);
+    const reorganization = {};
+
     for (const iterator of db) {
-      
+      const {
+        Txhash,
+      } = iterator;
+      if (!reorganization[Txhash]){
+        reorganization[Txhash] = [];
+      }
+      const cur = reorganization[Txhash];
+      cur.push(iterator);
+    }
+
+    const keys = Object.keys(reorganization);
+
+    for (const key of keys) {
+      const values = reorganization[key];
+      let isSupport = true;
+      let quantity = ethers.utils.parseEther('0');
+      let identifier = 2;
+      let type = 2;
+      let txHash = key;
+      let blockn = '';
+      let unixTimestamp = '';
+      let dateTime = '';
+      values.forEach((value) => {
+        const {
+          Blockno,
+          UnixTimestamp,
+          DateTime,
+          To,
+          Quantity,
+        } = value;
+        if (To === ELLERIA_CONTRACT_CREATOR_FEE){
+          identifier = 1;
+        }
+        if (To === TARGET_ADDRESS){
+          type = 1;
+        }
+        const currentQuantity = ethers.utils.parseEther(Quantity || '0');
+        quantity = quantity.add(currentQuantity);
+        blockn = Blockno;
+        unixTimestamp = UnixTimestamp;
+        dateTime = DateTime;
+      });
+      console.log(values);
+      if (txHash === '0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6'){
+        console.log(values);
+        console.log(ethers.utils.formatEther(quantity));
+      }
+      if (isSupport){
+        // 这是从 arb 上下载的 0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6 数据
+        const test = [
+          {
+            Txhash: '0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6',
+            Blockno: '28978205',
+            UnixTimestamp: '1665191773',
+            DateTime: '2022-10-08 01:16:13',
+            From: '0xd735e0259a4e48366f517cff39ebec16518b2d1c',
+            To: '0xdb6ab450178babcf0e467c1f3b436050d907e233',
+            Quantity: '0.85',
+            Method: 'Buy Items'
+          },
+          {
+            Txhash: '0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6',
+            Blockno: '28978205',
+            UnixTimestamp: '1665191773',
+            DateTime: '2022-10-08 01:16:13',
+            From: '0xd735e0259a4e48366f517cff39ebec16518b2d1c',
+            To: '0x69832af74774bae99d999e7f74fe3f7d5833bf84',
+            Quantity: '1.7',
+            Method: 'Buy Items'
+          },
+          {
+            Txhash: '0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6',
+            Blockno: '28978205',
+            UnixTimestamp: '1665191773',
+            DateTime: '2022-10-08 01:16:13',
+            From: '0xd735e0259a4e48366f517cff39ebec16518b2d1c',
+            To: '0x8f2b63841b815efd1e00c43c543d32685a7184a6',
+            Quantity: '31.45',
+            Method: 'Buy Items'
+          }
+        ]
+        // 通过区块上的数据无法知道下列几个属性
+        //  1. 无法知道 NFT ｜ Token 的目标合约
+        //    0. 无法确定这一笔交易属于 elleria 还是别的游戏
+        //    1. 无法更近一步的了解到来源于 trove 还是 magicswap
+        //  2. 通过合约和地址进一步的筛选
+        //    0. 可以通过判断合约 === ELLERIA_HEROS 是 elleria 游戏中的英雄
+        //    1. 判断合约 === ELLERIA_RELICS 是 elleria 游戏中的文物
+        //    2. 判断合约 === ELLERIA_ELM 是 elleria 的 Token
+        //    3. 判断 From === ELLERIA_WB 是 elleria 的 world boss 事件
+        //    4. 通过上述几个合约或地址，可以在数据上可以将 elleria 相关的数据筛选出来
+        //    5. 由于的区块数据归集后的数据，无非进行匹配，数据中不会露出上述的数据，不能进行筛选
+        //  3. 通过 To 这个字段可以判断是收入还是支出，如果 To 等于当前查询的目标地址，就是收入
+        //  4. 为演示应用，伪造清洗后可用的数据
+      }
     }
   } catch(e){
 
@@ -102,12 +199,86 @@ async function dbRun(){
 
 if (argv[2] && argv[2] === 'cleaning'){
   dbRun();
+  const mockdata = [
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6',
+      quantity: '34.0',
+      blockno: '28978205',
+      unixTimestamp: '1665191773',
+      dateTime: '2022-10-08 01:16:13',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa',
+      quantity: '150',
+      blockno: '28972053',
+      unixTimestamp: '1665187297',
+      dateTime: '2022-10-08 00:01:37',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3',
+      quantity: '33.93',
+      blockno: '28964216',
+      unixTimestamp: '1665180856',
+      dateTime: '2022-10-07 22:14:16',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0xaba87d120771fa2567dc27d12a8425e22b28e12f607e8d0f8240297553e4c492',
+      quantity: '37.8',
+      blockno: '28953708',
+      unixTimestamp: '1665173819',
+      dateTime: '2022-10-07 20:16:59',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0x100cb1d1cf4f13a393d6d2aaa9d34ffc8070eb7823504bbd7a227233e8a4dd0b',
+      quantity: '200',
+      blockno: '28942452',
+      unixTimestamp: '1665167017',
+      dateTime: '2022-10-07 18:23:37',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0x69d8fad0fbc1794aabf4b7553e7c4bb5d13415ad3f7de2020480b8455755f1dc',
+      quantity: '8.69',
+      blockno: '28940515',
+      unixTimestamp: '1665165953',
+      dateTime: '2022-10-07 18:05:53',
+      type: 2,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0xa439b32cea35ca1693b9d713aa1a7ca278f0fd3ccab07c3b40f4e027d5e478ec',
+      quantity: '61.05',
+      blockno: '28799125',
+      unixTimestamp: '1665113039',
+      dateTime: '2022-10-07 03:23:59',
+      type: 1,
+    },
+    {
+      identifier: 1,
+      address: TARGET_ADDRESS,
+      txHash: '0xf506cf43554d305239376c51c4e2a3dedc15529545b534c0e863fb260899ae7a',
+      quantity: '699',
+      blockno: '28544212',
+      unixTimestamp: '1664986877',
+      dateTime: '2022-10-05 16:21:17',
+      type: 2,
+    }
+  ];
 }
-
-/**
- * 以月做维度，提供查询，前端提交的参数为 1-12，由后端组合 start - end (date)，且 type = 1，去做组合查询
- */
-
-/**
- * 以年做维度，提供 type = 1 的 quantity SUM
- */
