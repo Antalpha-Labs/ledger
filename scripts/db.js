@@ -177,19 +177,6 @@ async function dbRun(){
             Method: 'Buy Items'
           }
         ]
-        // 通过区块上的数据无法知道下列几个属性
-        //  1. 无法知道 NFT ｜ Token 的目标合约
-        //    0. 无法确定这一笔交易属于 elleria 还是别的游戏
-        //    1. 无法更近一步的了解到来源于 trove 还是 magicswap
-        //  2. 通过合约和地址进一步的筛选
-        //    0. 可以通过判断合约 === ELLERIA_HEROS 是 elleria 游戏中的英雄
-        //    1. 判断合约 === ELLERIA_RELICS 是 elleria 游戏中的文物
-        //    2. 判断合约 === ELLERIA_ELM 是 elleria 的 Token
-        //    3. 判断 From === ELLERIA_WB 是 elleria 的 world boss 事件
-        //    4. 通过上述几个合约或地址，可以在数据上可以将 elleria 相关的数据筛选出来
-        //    5. 由于的区块数据归集后的数据，无非进行匹配，数据中不会露出上述的数据，不能进行筛选
-        //  3. 通过 To 这个字段可以判断是收入还是支出，如果 To 等于当前查询的目标地址，就是收入
-        //  4. 为演示应用，伪造清洗后可用的数据
       }
     }
   } catch(e){
@@ -293,5 +280,5 @@ async function mockRun(){
 
 if (argv[2] && argv[2] === 'cleaning'){
   // dbRun();
-  mockRun();
+  // mockRun();
 }

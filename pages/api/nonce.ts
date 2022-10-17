@@ -1,3 +1,4 @@
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import crypto from 'crypto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { wrappedResponse, Data } from '../../shared/wrappedResponse';
