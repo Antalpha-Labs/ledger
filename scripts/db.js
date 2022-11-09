@@ -35,6 +35,7 @@ AV.init({
 
 const Game = AV.Object.extend('Game');
 const OverallActivity = AV.Object.extend('OverallActivity');
+const Distance = AV.Object.extend('Distance');
 
 function createOverallActivityRow(obj){
   const overallActivity = new OverallActivity();
@@ -54,6 +55,13 @@ function createGameRow(obj){
   game.set('identifier', obj.identifier);
   game.set('name', obj.name);
   return game;
+}
+
+function createDistance(obj){
+  const distance = new Distance();
+  distance.set('address', obj.address);
+  distance.set('blockno', obj.blockno);
+  return distance;
 }
 
 async function run(){
@@ -282,3 +290,13 @@ if (argv[2] && argv[2] === 'cleaning'){
   // dbRun();
   // mockRun();
 }
+
+function runDistance(){
+  const d = createDistance({
+    address: '0xd735e0259a4e48366f517cff39ebec16518b2d1c',
+    blockno: '28978205'
+  });
+  d.save();
+}
+
+runDistance();
