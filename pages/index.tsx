@@ -38,20 +38,49 @@ const Home: NextPage = (props) => {
       </div>
       <div className="divider"></div> 
       <div>
+        <div className="mb-6 text-2xl">
+          Data Statistical 
+        </div>
         <div className="mb-6">
-          <div className="btn-group">
-            <button className="btn btn-sm btn-active">1</button>
-            <button className="btn btn-sm">2</button>
-            <button className="btn btn-sm">3</button>
-            <button className="btn btn-sm">4</button>
-            <button className="btn btn-sm">5</button>
-            <button className="btn btn-sm">6</button>
-            <button className="btn btn-sm">7</button>
-            <button className="btn btn-sm">8</button>
-            <button className="btn btn-sm">9</button>
-            <button className="btn btn-sm">10</button>
-            <button className="btn btn-sm">11</button>
-            <button className="btn btn-sm">12</button>
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th>type</th>
+                  <th>total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>PAYMENT</td>
+                  <td>3</td>
+                </tr>
+                <tr>
+                  <td>RECEIVE</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>SHOW</td>
+                  <td>-1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="mb-6">
+          <div className="tabs">
+            <a className="tab tab-lifted tab-active">1M</a> 
+            <a className="tab tab-lifted">2M</a> 
+            <a className="tab tab-lifted">3M</a>
+            <a className="tab tab-lifted">4M</a> 
+            <a className="tab tab-lifted">5M</a>
+            <a className="tab tab-lifted">6M</a> 
+            <a className="tab tab-lifted">7M</a>
+            <a className="tab tab-lifted">8M</a> 
+            <a className="tab tab-lifted">9M</a>
+            <a className="tab tab-lifted">10M</a> 
+            <a className="tab tab-lifted">11M</a>
+            <a className="tab tab-lifted">12M</a>
           </div>
         </div>
         <div className="mb-6">
@@ -66,45 +95,94 @@ const Home: NextPage = (props) => {
               </thead>
               <tbody>
                 <tr>
-                  <td>payment</td>
-                  <td>0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6</td>
+                  <td>PAYMENT</td>
+                  <td>
+                    <a 
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>2</td>
                 </tr>
                 <tr>
-                  <td>payment</td>
-                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>PAYMENT</td>
+                  <td>
+                    <a
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>22.099</td>
                 </tr>
                 <tr>
-                  <td>receive</td>
-                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
+                  <td>RECEIVE</td>
+                  <td>
+                    <a
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>332.22</td>
                 </tr>
                 <tr>
-                  <td>payment</td>
-                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>PAYMENT</td>
+                  <td>
+                    <a
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>22.099</td>
                 </tr>
                 <tr>
-                  <td>receive</td>
-                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
+                  <td>RECEIVE</td>
+                  <td>
+                    <a
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>332.22</td>
                 </tr>
                 <tr>
-                  <td>payment</td>
-                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>PAYMENT</td>
+                  <td>
+                    <a
+                      target="_blank" 
+                      className="link link-info" 
+                      href="https://arbiscan.io/tx/0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3" 
+                      rel="noreferrer"
+                    >
+                      0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3
+                    </a>
+                  </td>
                   <td>22.099</td>
-                </tr>
-                <tr>
-                  <td>receive</td>
-                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
-                  <td>332.22</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div className="flex flex-row justify-end">
+        <div className="flex flex-row justify-end mb-6">
           <div className="btn-group grid grid-cols-2">
             <button className="btn btn-outline">Previous page</button>
             <button className="btn btn-outline">Next</button>
