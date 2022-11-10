@@ -38,7 +38,37 @@ const Home: NextPage = (props) => {
       </div>
       <div className="divider"></div> 
       <div>
-        Content
+        <div className="mb-6">月</div>
+        <div>
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th>type</th>
+                  <th>txHash</th>
+                  <th>quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>payment</td>
+                  <td>0xe838d5b3838627c80c7483b37ed48263e03a44d8dc6125c5178034d488cb34a6</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>payment</td>
+                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>22.099</td>
+                </tr>
+                <tr>
+                  <td>receive</td>
+                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
+                  <td>332.22</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   )
