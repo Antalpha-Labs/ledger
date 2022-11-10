@@ -38,8 +38,23 @@ const Home: NextPage = (props) => {
       </div>
       <div className="divider"></div> 
       <div>
-        <div className="mb-6">月</div>
-        <div>
+        <div className="mb-6">
+          <div className="btn-group">
+            <button className="btn btn-sm btn-active">1</button>
+            <button className="btn btn-sm">2</button>
+            <button className="btn btn-sm">3</button>
+            <button className="btn btn-sm">4</button>
+            <button className="btn btn-sm">5</button>
+            <button className="btn btn-sm">6</button>
+            <button className="btn btn-sm">7</button>
+            <button className="btn btn-sm">8</button>
+            <button className="btn btn-sm">9</button>
+            <button className="btn btn-sm">10</button>
+            <button className="btn btn-sm">11</button>
+            <button className="btn btn-sm">12</button>
+          </div>
+        </div>
+        <div className="mb-6">
           <div className="overflow-x-auto">
             <table className="table w-full">
               <thead>
@@ -65,8 +80,34 @@ const Home: NextPage = (props) => {
                   <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
                   <td>332.22</td>
                 </tr>
+                <tr>
+                  <td>payment</td>
+                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>22.099</td>
+                </tr>
+                <tr>
+                  <td>receive</td>
+                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
+                  <td>332.22</td>
+                </tr>
+                <tr>
+                  <td>payment</td>
+                  <td>0xb11a468598c93d3d3e91ead853c8e431351582c91f3971a8bef08a635a4effaa</td>
+                  <td>22.099</td>
+                </tr>
+                <tr>
+                  <td>receive</td>
+                  <td>0x664a766a8d053b7cafcb906f8bb36657fb880e49765a6b7e12b5cf771d0940f3</td>
+                  <td>332.22</td>
+                </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        <div className="flex flex-row justify-end">
+          <div className="btn-group grid grid-cols-2">
+            <button className="btn btn-outline">Previous page</button>
+            <button className="btn btn-outline">Next</button>
           </div>
         </div>
       </div>
