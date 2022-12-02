@@ -1,5 +1,4 @@
 web3
-ethereum
 leancloud
 environs
 argparse
