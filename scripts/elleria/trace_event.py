@@ -8,7 +8,6 @@ from enum import Enum
 import leancloud
 from leancloud import LeanCloudError
 from web3 import Web3
-from ethereum.abi import decode_abi
 from environs import Env
 
 
@@ -21,7 +20,7 @@ WEB3_INFURA_PROJECT_ID = env.str('WEB3_INFURA_PROJECT_ID')
 leancloud.init(APP_ID, APP_KEY)
 
 # add your blockchain connection information
-infura_url = f'https://arb-mainnet.g.alchemy.com/v2/{WEB3_INFURA_PROJECT_ID}'
+infura_url = f'https://arbitrum-mainnet.infura.io/v3/{WEB3_INFURA_PROJECT_ID}'
 web3 = Web3(Web3.HTTPProvider(infura_url))
 
 # const
@@ -53,14 +52,14 @@ start_block_map = {
 
 def parse_input(types: list, input_data: str):
     input_bytes = bytes.fromhex(input_data[10:])
-    params = decode_abi(types, input_bytes)
+    params = Web3().codec.decode_abi(types, input_bytes)
     return params
 
 
 def parse_event_data(types, data):
     if len(data) <= 2:
         raise ValueError("event data is invalid")
-    return decode_abi(types, bytes.fromhex(data[2:]))
+    return Web3().codec.decode_abi(types, bytes.fromhex(data[2:]))
 
 
 def make_db_record(user_addr, hash_block, hash_tx, quantity, type):
