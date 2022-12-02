@@ -5,7 +5,6 @@ from decimal import Decimal
 from typing import Union
 from enum import Enum
 
-import eth_utils
 import leancloud
 from leancloud import LeanCloudError
 from web3 import Web3
@@ -36,8 +35,6 @@ NFT_TOKENS = ['0x7480224ec2b98f28cee3740c80940a2f489bf352', '0x381227255ef6c5d85
 # table name
 OVERALL_ACTIVITY = 'OverallActivity'
 DISTANCE = 'Distance'
-user_addr = None
-
 latest_sync_block = {}
 
 
@@ -66,8 +63,7 @@ def parse_event_data(types, data):
     return decode_abi(types, bytes.fromhex(data[2:]))
 
 
-def make_db_record(hash_block, hash_tx, quantity, type):
-    global user_addr
+def make_db_record(user_addr, hash_block, hash_tx, quantity, type):
     # handle block
     block_info = web3.eth.getBlock(hash_block)
     unixTimestamp = block_info['timestamp']
@@ -96,6 +92,7 @@ def handle_swap_event(event):
     data = event['data']
     event_data = parse_event_data(['uint256', 'uint256', 'uint256', 'uint256'], data)
 
+    user_addr = '0x' + event['topics'][2].hex()[26:]
     # handle transcation
     types = ['uint256', 'uint256', 'address[]', 'address', 'uint256']
     tx = web3.eth.getTransaction(hash_tx)
@@ -111,37 +108,27 @@ def handle_swap_event(event):
     else:
         return
 
-    db_record = make_db_record(hash_block, hash_tx, quantity, type)
+    db_record = make_db_record(user_addr, hash_block, hash_tx, quantity, type)
     # save to leancloud
     save_to_db(db_record)
 
 
 def handle_nft_swap_event(event):
-    global user_addr
     latest_sync_block[nft_swap_addr] = event['blockNumber']
     hash_tx = event['transactionHash']
     hash_block = event['blockHash']
     data = event['data']
     event_data = parse_event_data(['address', 'address', 'address', 'uint256', 'uint64', 'uint128', 'address'], data)
     seller, buyer, nftAddress, _, quantity, pricePerItem, paymentToken = event_data
-    if nftAddress in NFT_TOKENS and paymentToken == MAGIC:
-        if user_addr == seller:
-            type = 1
-        elif user_addr == buyer:
-            type = 2
-        else:
-            type = None
-    else:
-        return
-
-    if not type:
+    if not (nftAddress in NFT_TOKENS and paymentToken == MAGIC):
         return
 
     total_quantity = quantity * pricePerItem
     # 需扣除平台抽成与版税
     final_quantity = Decimal(total_quantity - total_quantity * 0.025 - total_quantity * 0.05) / Decimal(1e18)
-    db_record = make_db_record(hash_block, hash_tx, final_quantity, type)
-    # save to leancloud
+    db_record = make_db_record(seller, hash_block, hash_tx, final_quantity, 1)
+    save_to_db(db_record)
+    db_record = make_db_record(buyer, hash_block, hash_tx, final_quantity, 2)
     save_to_db(db_record)
 
 
@@ -153,7 +140,8 @@ def handle_world_boss_event(event):
     event_data = parse_event_data(['uint256'], event['data'])
     amount = event_data[0]
     quantity = Decimal(amount) / Decimal(1e18)
-    db_record = make_db_record(hash_block, hash_tx, quantity, 1)
+    user_addr = '0x' + event['topics'][2].hex()[26:]
+    db_record = make_db_record(user_addr, hash_block, hash_tx, quantity, 1)
     save_to_db(db_record)
 
 
@@ -178,13 +166,12 @@ def save_to_db(record: dict, table: str = OVERALL_ACTIVITY):
 
 
 def save_or_update_db(records: Union[dict, list], table: str = DISTANCE) -> None:
-    global user_addr
     if isinstance(records, dict):
         records = [records]
     ClassObj = leancloud.Object.extend(table)
 
     try:
-        objs = ClassObj.query.equal_to('address', user_addr).find()
+        objs = ClassObj.query.find()
     except LeanCloudError as ex:
         # Class or object doesn't exists at first time to save data.
         if ex.code == 101:
@@ -225,12 +212,12 @@ async def log_loop(event_filter, poll_interval, kind):
         current_block_no = new_event_filter['toBlock'] + 1
 
 
-async def find_last_blockno(addr, contract):
-    # find last trace height of block for this address
+async def find_last_blockno(contract):
+    # find last trace height of block for contract
     distance_class = leancloud.Object.extend(DISTANCE)
 
     try:
-        obj = distance_class.query.equal_to('address', addr).equal_to('contract', contract).first()
+        obj = distance_class.query.equal_to('contract', contract).first()
     except LeanCloudError as error:
         if error.code == 101:
             return start_block_map.get(contract, 'earliest')
@@ -242,14 +229,11 @@ async def find_last_blockno(addr, contract):
 
 async def trace_swap_contract(poll_interval):
     print('start trace swap contract...........................')
-    global user_addr
-    last_blockno = await find_last_blockno(user_addr, swap_addr)
+    last_blockno = await find_last_blockno(swap_addr)
 
-    nonprefix_user_addr = eth_utils.remove_0x_prefix(user_addr)
     topics = [
         '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822',
-        '0x00000000000000000000000023805449f91bb2d2054d9ba288fdc8f09b5eac79',
-        f'0x000000000000000000000000{nonprefix_user_addr}'
+        '0x00000000000000000000000023805449f91bb2d2054d9ba288fdc8f09b5eac79'
     ]
     event_filter = {
         "fromBlock": last_blockno,
@@ -262,8 +246,7 @@ async def trace_swap_contract(poll_interval):
 
 async def trace_nft_swap_contract(poll_interval):
     print('start trace nft swap contract...........................')
-    global user_addr
-    last_blockno = await find_last_blockno(user_addr, nft_swap_addr)
+    last_blockno = await find_last_blockno(nft_swap_addr)
     topics = ['0x72d3f914473a393354e6fcd9c3cb7d2eee53924b9b856f9da274e024566292a5']
     event_filter = {
         "fromBlock": last_blockno,
@@ -275,12 +258,10 @@ async def trace_nft_swap_contract(poll_interval):
 
 async def trace_world_boss_contract(poll_interval):
     print('start trace world boss contract...........................')
-    global user_addr
-    last_blockno = await find_last_blockno(user_addr, MAGIC)
-    nonprefix_user_addr = eth_utils.remove_0x_prefix(user_addr)
+    last_blockno = await find_last_blockno(MAGIC)
     topics = ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-              '0x00000000000000000000000084c8bd99df40626f6d9cb9a1e71d2f65278d75fa',
-              f'0x000000000000000000000000{nonprefix_user_addr}']
+              '0x00000000000000000000000084c8bd99df40626f6d9cb9a1e71d2f65278d75fa'
+              ]
     event_filter = {
         "fromBlock": last_blockno,
         "address": Web3.toChecksumAddress(MAGIC),
@@ -289,32 +270,19 @@ async def trace_world_boss_contract(poll_interval):
     await log_loop(event_filter, poll_interval, 'world_boss')
 
 
-def valid_address(addr):
-    # 检查地址是否有效
-    if not web3.isAddress(addr) or eth_utils.is_binary_address(addr):
-        msg = f"Not a valid address: '{addr}'."
-        raise argparse.ArgumentTypeError(msg)
-    return addr
-
-
 # when main is called
 # create a filter according to the height of the last query and look for events for the related contracts
 # run an async loop
 # try to run the log_loop function above every {poll_interval} seconds default is 0 second
 def main(argv=None):
-    global user_addr
     parser = argparse.ArgumentParser('ledger trace script')
     parser.add_argument('--version', '-v', action='version',
                         version='%(prog)s version : v 0.01', help='show the version')
-    parser.add_argument('address', type=valid_address,
-                        help='0x or binary address that you want to trace')
     parser.add_argument('--interval', '-i', type=int, default=0,
                         help='The time interval for pulling bills from the chain，default is 0 second')
 
     args = parser.parse_args(argv)
-    user_addr = args.address
     poll_interval = args.interval
-
     loop = asyncio.get_event_loop()
     try:
         print('pull start .....................................')
@@ -329,7 +297,6 @@ def main(argv=None):
         records = []
         for contract, blockno in latest_sync_block.items():
             record = {
-                'address': user_addr,
                 'contract': contract,
                 'blockno': blockno
             }
@@ -337,6 +304,7 @@ def main(argv=None):
         try:
             save_or_update_db(records)
         finally:
+            print(f"latest_sync_block:{latest_sync_block}")
             print('pull complete！')
             loop.close()
 
