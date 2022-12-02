@@ -9,7 +9,7 @@
       (It is recommended to use the infrua service provider, of course, self-built is nice)
    * Set APP_ID and APP_KEY to leancloud's app_id and app_key
 4. Run the script in the directory where the script is located, the command like this:  
-`python ./trace_event.py {your_address}`  
+`python ./trace_event.py`  
 
 `Note: If the operation is normal, the height of the block currently retrieved by the contract will be output on the terminal. As of November 29, 2022,
 It takes about 4 hours to generate a full ledger record for an address. You can stop the script running in the middle, and the script will automatically save
@@ -29,7 +29,7 @@ The latest block height in leancloud, so that the next time the script is run, i
 
 4. 在脚本所在目录运行脚本:
 
-`python ./trace_event.py {your_address}`  
+`python ./trace_event.py`  
 
 `说明:  若运行正常会在终端输出合约当前检索的区块的高度，截止2022年11月29日，
 若生成一个地址的完整账本记录大约花费4小时。在中途可以停止脚本运行，脚本会自动记录下
