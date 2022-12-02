@@ -14,8 +14,8 @@ from environs import Env
 env = Env()
 # load env
 env.read_env('.env')
-APP_ID = env.str('APP_ID')
-APP_KEY = env.str('APP_KEY')
+APP_ID = env.str('LEANCLOUD_APPID')
+APP_KEY = env.str('LEANCLOUD_APPKEY')
 WEB3_INFURA_PROJECT_ID = env.str('WEB3_INFURA_PROJECT_ID')
 leancloud.init(APP_ID, APP_KEY)
 
