@@ -44,7 +44,7 @@ class GameID(Enum):
 
 # 查找event应该从合约第一笔调用的区块开始，减少查询量
 start_block_map = {
-    swap_addr: 21196141,
+    swap_addr: 20547293,
     nft_swap_addr: 8858407,
     MAGIC: 2028078,
 }
