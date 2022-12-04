@@ -95,7 +95,15 @@ def handle_swap_event(event):
     types = ['uint256', 'uint256', 'address[]', 'address', 'uint256']
     tx = web3.eth.getTransaction(hash_tx)
     input = tx['input']
-    params = parse_input(types, input)
+
+    try:
+        params = parse_input(types, input)
+    except Exception as ex:
+        # 这里可能原因是之前有一个旧swap合约，被弃用了，但旧合约的log也会被匹配到，
+        # 但旧合约的input格式与新合约格式不一样，所以这里会解析失败，跳过处理
+        print(f'parse input error of {hash_tx.hex()},reason: f{ex}')
+        return
+
     input_token, output_token = params[2]
     if input_token == MAGIC and output_token == ELM:
         type = 2  # 1 for profit, 2 for loss
