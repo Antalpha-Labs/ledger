@@ -45,8 +45,8 @@ class GameID(Enum):
 # 查找event应该从合约第一笔调用的区块开始，减少查询量
 start_block_map = {
     swap_addr: 21196141,
-    nft_swap_addr: 25107634,
-    MAGIC: 20402884,
+    nft_swap_addr: 8858407,
+    MAGIC: 2028078,
 }
 
 
@@ -84,7 +84,6 @@ def make_db_record(user_addr, hash_block, hash_tx, quantity, type):
 
 # handle event
 def handle_swap_event(event):
-    print(f"swap event handle：{event['transactionHash'].hex()}")
     latest_sync_block[swap_addr] = event['blockNumber']
     hash_tx = event['transactionHash']
     hash_block = event['blockHash']
@@ -113,22 +112,40 @@ def handle_swap_event(event):
 
 
 def handle_nft_swap_event(event):
+    print(f"nft swap event:{event['transactionHash'].hex()}")
     latest_sync_block[nft_swap_addr] = event['blockNumber']
     hash_tx = event['transactionHash']
     hash_block = event['blockHash']
-    data = event['data']
-    event_data = parse_event_data(['address', 'address', 'address', 'uint256', 'uint64', 'uint128', 'address'], data)
-    seller, buyer, nftAddress, _, quantity, pricePerItem, paymentToken = event_data
-    if not (nftAddress in NFT_TOKENS and paymentToken == MAGIC):
-        return
+    receipt = web3.eth.getTransactionReceipt(hash_tx)
+    logs = receipt['logs']
 
-    total_quantity = quantity * pricePerItem
-    # 需扣除平台抽成与版税
-    final_quantity = Decimal(total_quantity - total_quantity * 0.025 - total_quantity * 0.05) / Decimal(1e18)
-    db_record = make_db_record(seller, hash_block, hash_tx, final_quantity, 1)
-    save_to_db(db_record)
-    db_record = make_db_record(buyer, hash_block, hash_tx, final_quantity, 2)
-    save_to_db(db_record)
+    buyer_amount = Decimal(0)
+    for log in logs:
+        contract = log['address'].lower()
+        topics = log['topics']
+
+        if contract == MAGIC and \
+                topics[0].hex() == '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef':
+            buyer = '0x' + topics[1].hex()[26:]
+            seller = '0x' + topics[2].hex()[26:]
+            if seller not in ['0x69832af74774bae99d999e7f74fe3f7d5833bf84',
+                              '0xdb6ab450178babcf0e467c1f3b436050d907e233']:
+                log_data = log['data']
+                event_data = parse_event_data(['uint256'], log_data)
+                final_quantity = Decimal(event_data[0]) / Decimal(1e18)
+
+                buyer_amount += final_quantity
+                db_record = make_db_record(seller, hash_block, hash_tx, final_quantity, 1)
+                save_to_db(db_record)
+            else:
+                log_data = log['data']
+                event_data = parse_event_data(['uint256'], log_data)
+                final_quantity = Decimal(event_data[0]) / Decimal(1e18)
+                buyer_amount += final_quantity
+    else:
+        if buyer_amount:
+            db_record = make_db_record(buyer, hash_block, hash_tx, buyer_amount, 2)
+            save_to_db(db_record)
 
 
 def handle_world_boss_event(event):
@@ -195,18 +212,21 @@ def save_or_update_db(records: Union[dict, list], table: str = DISTANCE) -> None
 async def log_loop(event_filter, poll_interval, kind):
     current_block_no = event_filter['fromBlock']
     last_block_no = web3.eth.get_block_number()
-    while current_block_no < last_block_no:
-        print(f"{kind} current block no:{current_block_no}")
+    while current_block_no <= last_block_no:
         new_event_filter = {
             "fromBlock": current_block_no,
-            "toBlock": current_block_no + 1999,
+            "toBlock": current_block_no + 4999,
             "address": event_filter["address"],
             "topics": event_filter["topics"]
         }
-        latest_sync_block[event_filter["address"].lower()] = current_block_no
+        if kind == 'nft_swap':
+            latest_sync_block[nft_swap_addr] = current_block_no
+        else:
+            latest_sync_block[event_filter["address"].lower()] = current_block_no
         handle_func = handle_func_map[kind]
         for event in web3.eth.get_logs(new_event_filter):
             handle_func(event)
+        print(f"current block no:{latest_sync_block}")
         await asyncio.sleep(poll_interval)
         current_block_no = new_event_filter['toBlock'] + 1
 
@@ -246,10 +266,14 @@ async def trace_swap_contract(poll_interval):
 async def trace_nft_swap_contract(poll_interval):
     print('start trace nft swap contract...........................')
     last_blockno = await find_last_blockno(nft_swap_addr)
-    topics = ['0x72d3f914473a393354e6fcd9c3cb7d2eee53924b9b856f9da274e024566292a5']
+    # topics = ['0x72d3f914473a393354e6fcd9c3cb7d2eee53924b9b856f9da274e024566292a5']
+    topics = [['0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+               '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']]
     event_filter = {
         "fromBlock": last_blockno,
-        "address": Web3.toChecksumAddress(nft_swap_addr),
+        # "address": Web3.toChecksumAddress(nft_swap_addr),
+        "address": [Web3.toChecksumAddress('0x7480224ec2b98f28cee3740c80940a2f489bf352'),
+                    Web3.toChecksumAddress('0x381227255ef6c5d85966b78d13e4b4a4c8719b5e')],
         "topics": topics
     }
     await log_loop(event_filter, poll_interval, 'nft_swap')
