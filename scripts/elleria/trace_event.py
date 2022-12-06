@@ -1,5 +1,9 @@
+import os
+import copy
+
 import argparse
 import asyncio
+import json
 from datetime import datetime
 from decimal import Decimal
 from typing import Union
@@ -241,17 +245,29 @@ async def log_loop(event_filter, poll_interval, kind):
 
 async def find_last_blockno(contract):
     # find last trace height of block for contract
-    distance_class = leancloud.Object.extend(DISTANCE)
+    # distance_class = leancloud.Object.extend(DISTANCE)
 
-    try:
-        obj = distance_class.query.equal_to('contract', contract).first()
-    except LeanCloudError as error:
-        if error.code == 101:
+    is_file_existed = os.path.exists('height.txt')
+    if not is_file_existed:
+        return start_block_map.get(contract, 'earliest')
+
+    with open('height.txt', 'r') as f:
+        json_data = f.readline()
+        if not json_data:
             return start_block_map.get(contract, 'earliest')
         else:
-            raise
+            height_dict = json.loads(json_data)
+            return height_dict.get(contract, start_block_map.get(contract, 'earliest'))
 
-    return obj.get('blockno', 'earliest')
+    # try:
+    #     obj = distance_class.query.equal_to('contract', contract).first()
+    # except LeanCloudError as error:
+    #     if error.code == 101:
+    #         return start_block_map.get(contract, 'earliest')
+    #     else:
+    #         raise
+
+    # return obj.get('blockno', 'earliest')
 
 
 async def trace_swap_contract(poll_interval):
@@ -325,15 +341,40 @@ def main(argv=None):
             )
         )
     finally:
-        records = []
-        for contract, blockno in latest_sync_block.items():
-            record = {
-                'contract': contract,
-                'blockno': blockno
-            }
-            records.append(record)
+
+        # records = []
+        # for contract, blockno in latest_sync_block.items():
+        #     record = {
+        #         'contract': contract,
+        #         'blockno': blockno
+        #     }
+        #     records.append(record)
         try:
-            save_or_update_db(records)
+            # save_or_update_db(records)
+            new_height_dict = {}
+            is_file_existed = os.path.exists('height.txt')
+            if not is_file_existed:
+                with open('height.txt', 'w') as f:
+                    f.write(json.dumps(latest_sync_block))
+            else:
+                with open('height.txt', 'r') as f:
+                    data = f.readline()
+                    if data:
+                        height_dict = json.loads(data)
+                        for contract, height in height_dict.items():
+                            if contract in latest_sync_block:
+                                new_height_dict[contract] = latest_sync_block[contract]
+                            else:
+                                new_height_dict[contract] = height
+                        new_keys = set(latest_sync_block.keys()) - set(height_dict.keys())
+                        for _key in new_keys:
+                            new_height_dict[_key] = latest_sync_block[_key]
+                    else:
+                        new_height_dict = copy.deepcopy(latest_sync_block)
+
+                with open('height.txt', 'w') as f:
+                    new_data = json.dumps(new_height_dict)
+                    f.write(new_data)
         finally:
             print(f"latest_sync_block:{latest_sync_block}")
             print('pull complete！')
