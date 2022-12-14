@@ -31,3 +31,26 @@ export function getNonce(): AxiosPromise<Response<INonce>>{
     url: '/api/nonce'
   });
 }
+
+
+export interface IQuery{
+  objectId: string;
+  address: string;
+  blockno: number;
+  dateTime: string;
+  txHash: string;
+  quantity: string;
+  type: number;
+  unixTimestamp: number;
+}
+
+export function query(address: string, page: number): AxiosPromise<Response<{ oa: IQuery[]}>>{
+  return axios({
+    method: 'get',
+    url: '/api/query',
+    params: {
+      address,
+      page
+    }
+  })
+}
