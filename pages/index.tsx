@@ -1,69 +1,16 @@
 import type { NextPage } from 'next';
-import styles from '../styles/Home.module.css';
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import { query, IQuery } from '../shared/RESTAPIs';
 import code from '../shared/code';
-
-const tabsData = [
-  {
-    value: '1M',
-    status: true
-  },
-  {
-    value: '2M',
-    status: false
-  },
-  {
-    value: '3M',
-    status: false
-  },
-  {
-    value: '4M',
-    status: false
-  },
-  {
-    value: '5M',
-    status: false
-  },
-  {
-    value: '6M',
-    status: false
-  },
-  {
-    value: '7M',
-    status: false
-  },
-  {
-    value: '8M',
-    status: false
-  },
-  {
-    value: '9M',
-    status: false
-  },
-  {
-    value: '10M',
-    status: false
-  },
-  {
-    value: '11M',
-    status: false
-  },
-  {
-    value: '12M',
-    status: false
-  },
-]
 
 let cur = 0;
 let itemMax = 0;
 let rangeMax = 6;
 let group: IQuery[] = [];
 
-const Home: NextPage = (props) => {
+const Home: NextPage = () => {
   const [address, setAddress] = useState('');
-  // const [tabs, setTabs] = useState(tabsData);
   const [data, setData] = useState<IQuery[]>([]);
   const [r, setR] = useState(ethers.utils.parseEther('0'));
   const [p, setP] = useState(ethers.utils.parseEther('0'));
@@ -98,30 +45,32 @@ const Home: NextPage = (props) => {
       setP(payment);
       setS(receive.sub(payment));
       itemMax = Math.ceil(group.length/rangeMax);
-      setData([
-        group[0],
-        group[1],
-        group[2],
-        group[3],
-        group[4],
-        group[5]
-      ])
+      setData(group.slice(0, rangeMax));
+      cur++;
+      console.log(group);
     } else {
       alert('输入正确的地址');
     }
   }
-  const tabsHandler = (i: number) => {
-    const newTabs = tabsData.map((tab) => {
-      tab.status = false;
-      return tab;
-    }).map((tab, j) => {
-      if (j === i){
-        tab.status = true;
-      }
-      return tab;
-    });
-    // setTabs(newTabs);
+  const preHandler = () => {
+    const temp = cur - 2;
+    if (temp < 0){
+      alert('已经在第一页');
+    } else {
+      cur--;
+      setData(group.slice(temp*rangeMax, cur*rangeMax));
+    }
   }
+  const nextHandler = () => {
+    const temp = cur + 1;
+    if (temp > itemMax){
+      alert('已经在最后一页');
+    } else {
+      setData(group.slice(cur * rangeMax, temp * rangeMax));
+      cur++;
+    }
+  }
+
   return (
     <div>
       <div className="text-3xl mb-5 mt-5">Tales of Elleria</div>
@@ -144,23 +93,6 @@ const Home: NextPage = (props) => {
       </div>
       <div className="divider"></div> 
       <div>
-        {/* <div className="mb-6">
-          <div className="tabs">
-            {
-              tabs.map((tab, i) => {
-                const { value, status } = tab;
-                const classnames = `tab tab-lifted ${status ? 'tab-active' : ''}`;
-                return (
-                  <a className={classnames} onClick={() => { 
-                    if(!status){
-                      tabsHandler(i);
-                    }
-                  }} key={value}>{value}</a> 
-                )
-              })
-            }
-          </div>
-        </div> */}
         <div className="mb-6">
           <div className="overflow-x-auto">
             <table className="table w-full">
@@ -229,8 +161,8 @@ const Home: NextPage = (props) => {
         </div>
         <div className="flex flex-row justify-end mb-6">
           <div className="btn-group grid grid-cols-2">
-            <button className="btn btn-outline">Previous page</button>
-            <button className="btn btn-outline">Next</button>
+            <button className="btn btn-outline" onClick={preHandler}>Previous page</button>
+            <button className="btn btn-outline" onClick={nextHandler}>Next</button>
           </div>
         </div>
       </div>
