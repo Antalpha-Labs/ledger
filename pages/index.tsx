@@ -47,7 +47,6 @@ const Home: NextPage = () => {
       itemMax = Math.ceil(group.length/rangeMax);
       setData(group.slice(0, rangeMax));
       cur++;
-      console.log(group);
     } else {
       alert('输入正确的地址');
     }
