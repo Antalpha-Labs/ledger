@@ -19,6 +19,7 @@ export default async function handler(
   overallActivity.limit(limit);
   overallActivity.skip((Number(page) - 1) * limit);
   overallActivity.equalTo('address', address);
+  overallActivity.lessThan('dateTime', new Date('2023-01-01 00:00:00'));
   const data = await overallActivity.find();
   res.status(200).json(wrappedResponse(code.ok, { oa: data.map((value) => {
     return {
