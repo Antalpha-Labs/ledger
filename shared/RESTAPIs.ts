@@ -44,13 +44,14 @@ export interface IQuery{
   unixTimestamp: number;
 }
 
-export function query(address: string, page: number): AxiosPromise<Response<{ oa: IQuery[]}>>{
+export function query(address: string, page: number, y: string): AxiosPromise<Response<{ oa: IQuery[]}>>{
   return axios({
     method: 'get',
     url: '/api/query',
     params: {
       address,
-      page
+      page,
+      y
     }
   })
 }
