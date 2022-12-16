@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { ethers } from 'ethers';
 import { query, IQuery } from '../shared/RESTAPIs';
 import code from '../shared/code';
@@ -12,6 +12,7 @@ let group: IQuery[] = [];
 const Home: NextPage = () => {
   const [address, setAddress] = useState('');
   const [data, setData] = useState<IQuery[]>([]);
+  const [y, setY] = useState('2022');
   const [r, setR] = useState(ethers.utils.parseEther('0'));
   const [p, setP] = useState(ethers.utils.parseEther('0'));
   const [s, setS] = useState(ethers.utils.parseEther('0'));
@@ -19,13 +20,14 @@ const Home: NextPage = () => {
   const inputHandler = (e: any) => {
     setAddress(e.target.value);
   }
+
   const submitHandler = async () => {
     if(ethers.utils.isAddress(address)){
       group.length = 0;
       let receive = ethers.utils.parseEther('0');
       let payment = ethers.utils.parseEther('0');
       for (let page = 0; page < Number.MAX_SAFE_INTEGER; page++) {
-        const result = await query(address.toLocaleLowerCase(), page + 1);
+        const result = await query(address.toLocaleLowerCase(), page + 1, y);
         if (result.data.code === code.ok){
           if (result.data.data.oa.length === 0){
             break;
@@ -51,6 +53,11 @@ const Home: NextPage = () => {
       alert('输入正确的地址');
     }
   }
+
+  const selectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setY(e.target.value)
+  }
+
   const preHandler = () => {
     const temp = cur - 2;
     if (temp < 0){
@@ -60,6 +67,7 @@ const Home: NextPage = () => {
       setData(group.slice(temp*rangeMax, cur*rangeMax));
     }
   }
+
   const nextHandler = () => {
     const temp = cur + 1;
     if (temp > itemMax){
@@ -75,8 +83,9 @@ const Home: NextPage = () => {
       <div className="text-3xl mb-5 mt-5">Tales of Elleria</div>
       <div className="flex flex-row items-center">
         <div className="mr-5">
-          <select className="select-sm w-full max-w-xs">
-            <option value={2022}>2022</option>
+          <select className="select-sm w-full max-w-xs" onChange={selectChange}>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
           </select>
         </div>
         <div>
