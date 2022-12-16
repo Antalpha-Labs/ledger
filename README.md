@@ -23,6 +23,8 @@ npm run dev
 yarn dev
 ```
 
+**由于 leancloud 国际版已经屏蔽了中国大陆的 IP，因此需要科学上网**
+
 第四步：
 
 输入演示地址 `0xd735e0259a4e48366f517cff39ebec16518b2d1c` 进行查看
