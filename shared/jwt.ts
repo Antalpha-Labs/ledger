@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import code from './code';
 
-const HMAC_SHA256 = 'zaaUxv6fJ512zbKxa45gdF3v';
+const HMAC_SHA256 = process.env.HMAC_SHA256;
 
 export function createJWTToken(message: string){
   return jwt.sign({data: message}, HMAC_SHA256, { expiresIn: '10h' });
